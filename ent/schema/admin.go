@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"time"
 )
 
 type Admin struct {
@@ -14,7 +15,12 @@ type Admin struct {
 }
 
 func (Admin) Fields() []ent.Field {
-	return []ent.Field{field.UUID("id", uuid.UUID{}), field.String("email").Unique(), field.String("password_hash"), field.String("name").Optional(), field.Time("created_at")}
+	return []ent.Field{
+	field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
+	field.String("email").Unique().NotEmpty(),
+	field.String("password_hash").NotEmpty(),
+	field.String("name").Optional(),
+	field.Time("created_at").Default(time.Now).Immutable()}
 }
 func (Admin) Edges() []ent.Edge {
 	return nil

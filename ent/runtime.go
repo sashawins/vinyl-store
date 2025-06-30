@@ -4,6 +4,7 @@ package ent
 
 import (
 	"time"
+	"vinyl-store/ent/admin"
 	"vinyl-store/ent/artist"
 	"vinyl-store/ent/genre"
 	"vinyl-store/ent/news"
@@ -20,6 +21,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	adminFields := schema.Admin{}.Fields()
+	_ = adminFields
+	// adminDescEmail is the schema descriptor for email field.
+	adminDescEmail := adminFields[1].Descriptor()
+	// admin.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	admin.EmailValidator = adminDescEmail.Validators[0].(func(string) error)
+	// adminDescPasswordHash is the schema descriptor for password_hash field.
+	adminDescPasswordHash := adminFields[2].Descriptor()
+	// admin.PasswordHashValidator is a validator for the "password_hash" field. It is called by the builders before save.
+	admin.PasswordHashValidator = adminDescPasswordHash.Validators[0].(func(string) error)
+	// adminDescCreatedAt is the schema descriptor for created_at field.
+	adminDescCreatedAt := adminFields[4].Descriptor()
+	// admin.DefaultCreatedAt holds the default value on creation for the created_at field.
+	admin.DefaultCreatedAt = adminDescCreatedAt.Default.(func() time.Time)
+	// adminDescID is the schema descriptor for id field.
+	adminDescID := adminFields[0].Descriptor()
+	// admin.DefaultID holds the default value on creation for the id field.
+	admin.DefaultID = adminDescID.Default.(func() uuid.UUID)
 	artistFields := schema.Artist{}.Fields()
 	_ = artistFields
 	// artistDescName is the schema descriptor for name field.

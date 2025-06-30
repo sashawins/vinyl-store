@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 	"vinyl-store/ent/admin"
 	"vinyl-store/ent/predicate"
 
@@ -76,20 +75,6 @@ func (au *AdminUpdate) ClearName() *AdminUpdate {
 	return au
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (au *AdminUpdate) SetCreatedAt(t time.Time) *AdminUpdate {
-	au.mutation.SetCreatedAt(t)
-	return au
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (au *AdminUpdate) SetNillableCreatedAt(t *time.Time) *AdminUpdate {
-	if t != nil {
-		au.SetCreatedAt(*t)
-	}
-	return au
-}
-
 // Mutation returns the AdminMutation object of the builder.
 func (au *AdminUpdate) Mutation() *AdminMutation {
 	return au.mutation
@@ -122,7 +107,25 @@ func (au *AdminUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (au *AdminUpdate) check() error {
+	if v, ok := au.mutation.Email(); ok {
+		if err := admin.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "Admin.email": %w`, err)}
+		}
+	}
+	if v, ok := au.mutation.PasswordHash(); ok {
+		if err := admin.PasswordHashValidator(v); err != nil {
+			return &ValidationError{Name: "password_hash", err: fmt.Errorf(`ent: validator failed for field "Admin.password_hash": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (au *AdminUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := au.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(admin.Table, admin.Columns, sqlgraph.NewFieldSpec(admin.FieldID, field.TypeUUID))
 	if ps := au.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -142,9 +145,6 @@ func (au *AdminUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if au.mutation.NameCleared() {
 		_spec.ClearField(admin.FieldName, field.TypeString)
-	}
-	if value, ok := au.mutation.CreatedAt(); ok {
-		_spec.SetField(admin.FieldCreatedAt, field.TypeTime, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -214,20 +214,6 @@ func (auo *AdminUpdateOne) ClearName() *AdminUpdateOne {
 	return auo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (auo *AdminUpdateOne) SetCreatedAt(t time.Time) *AdminUpdateOne {
-	auo.mutation.SetCreatedAt(t)
-	return auo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (auo *AdminUpdateOne) SetNillableCreatedAt(t *time.Time) *AdminUpdateOne {
-	if t != nil {
-		auo.SetCreatedAt(*t)
-	}
-	return auo
-}
-
 // Mutation returns the AdminMutation object of the builder.
 func (auo *AdminUpdateOne) Mutation() *AdminMutation {
 	return auo.mutation
@@ -273,7 +259,25 @@ func (auo *AdminUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (auo *AdminUpdateOne) check() error {
+	if v, ok := auo.mutation.Email(); ok {
+		if err := admin.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "Admin.email": %w`, err)}
+		}
+	}
+	if v, ok := auo.mutation.PasswordHash(); ok {
+		if err := admin.PasswordHashValidator(v); err != nil {
+			return &ValidationError{Name: "password_hash", err: fmt.Errorf(`ent: validator failed for field "Admin.password_hash": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (auo *AdminUpdateOne) sqlSave(ctx context.Context) (_node *Admin, err error) {
+	if err := auo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(admin.Table, admin.Columns, sqlgraph.NewFieldSpec(admin.FieldID, field.TypeUUID))
 	id, ok := auo.mutation.ID()
 	if !ok {
@@ -310,9 +314,6 @@ func (auo *AdminUpdateOne) sqlSave(ctx context.Context) (_node *Admin, err error
 	}
 	if auo.mutation.NameCleared() {
 		_spec.ClearField(admin.FieldName, field.TypeString)
-	}
-	if value, ok := auo.mutation.CreatedAt(); ok {
-		_spec.SetField(admin.FieldCreatedAt, field.TypeTime, value)
 	}
 	_node = &Admin{config: auo.config}
 	_spec.Assign = _node.assignValues

@@ -53,9 +53,25 @@ func (ac *AdminCreate) SetCreatedAt(t time.Time) *AdminCreate {
 	return ac
 }
 
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ac *AdminCreate) SetNillableCreatedAt(t *time.Time) *AdminCreate {
+	if t != nil {
+		ac.SetCreatedAt(*t)
+	}
+	return ac
+}
+
 // SetID sets the "id" field.
 func (ac *AdminCreate) SetID(u uuid.UUID) *AdminCreate {
 	ac.mutation.SetID(u)
+	return ac
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (ac *AdminCreate) SetNillableID(u *uuid.UUID) *AdminCreate {
+	if u != nil {
+		ac.SetID(*u)
+	}
 	return ac
 }
 
@@ -66,6 +82,7 @@ func (ac *AdminCreate) Mutation() *AdminMutation {
 
 // Save creates the Admin in the database.
 func (ac *AdminCreate) Save(ctx context.Context) (*Admin, error) {
+	ac.defaults()
 	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
 }
 
@@ -91,13 +108,35 @@ func (ac *AdminCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ac *AdminCreate) defaults() {
+	if _, ok := ac.mutation.CreatedAt(); !ok {
+		v := admin.DefaultCreatedAt()
+		ac.mutation.SetCreatedAt(v)
+	}
+	if _, ok := ac.mutation.ID(); !ok {
+		v := admin.DefaultID()
+		ac.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (ac *AdminCreate) check() error {
 	if _, ok := ac.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "Admin.email"`)}
 	}
+	if v, ok := ac.mutation.Email(); ok {
+		if err := admin.EmailValidator(v); err != nil {
+			return &ValidationError{Name: "email", err: fmt.Errorf(`ent: validator failed for field "Admin.email": %w`, err)}
+		}
+	}
 	if _, ok := ac.mutation.PasswordHash(); !ok {
 		return &ValidationError{Name: "password_hash", err: errors.New(`ent: missing required field "Admin.password_hash"`)}
+	}
+	if v, ok := ac.mutation.PasswordHash(); ok {
+		if err := admin.PasswordHashValidator(v); err != nil {
+			return &ValidationError{Name: "password_hash", err: fmt.Errorf(`ent: validator failed for field "Admin.password_hash": %w`, err)}
+		}
 	}
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Admin.created_at"`)}
@@ -174,6 +213,7 @@ func (acb *AdminCreateBulk) Save(ctx context.Context) ([]*Admin, error) {
 	for i := range acb.builders {
 		func(i int, root context.Context) {
 			builder := acb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AdminMutation)
 				if !ok {
