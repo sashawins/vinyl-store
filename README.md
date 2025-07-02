@@ -1,4 +1,4 @@
-# vinyl-store
+# Vinyl Store REST API project
 
 ## Tools:
  - Swagger Editor: [`editor.swagger.io/`](https://editor.swagger.io/) 
@@ -13,6 +13,8 @@ Preview via copying into: [`editor.swagger.io/`](https://editor.swagger.io/)
  - Go: `brew install go`
  - Entgo: `go install entgo.io/ent/cmd/ent@latest`
  - PostgreSQL: [`www.postgresql.org/`](https://www.postgresql.org/)
+
+# Deployment:
 
 ## Prepare Database
 1. Create database via PostgreSQL named `vinyl-store`
