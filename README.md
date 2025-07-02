@@ -54,4 +54,4 @@ go run .
 
 ## Test API requests:
 In Postman:
- - File -> Import... -> Choose [`openapi.yaml`](api/openapi.yaml)
+ - File → Import... → Choose [`openapi.yaml`](api/openapi.yaml)
